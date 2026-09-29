@@ -7,6 +7,7 @@ Two verification checks are run after fixes are applied:
 2. Run the full pytest suite and capture pass/fail counts.
 """
 
+import os
 import subprocess
 import sys
 from dataclasses import dataclass, field
@@ -95,7 +96,14 @@ def verify_scans(app_dir: str | None = None) -> list[ScanVerification]:
 def run_pytest(test_dirs: list[str] | None = None) -> PytestResult:
     """Run pytest programmatically and return structured results."""
     project_root = Path(__file__).parent.parent
-    dirs = test_dirs or [str(project_root / "tests")]
+
+    # Guard against recursively launching the full suite from inside pytest.
+    # A nested verification run uses the scanner tests unless an explicit
+    # test target was supplied by the caller.
+    if test_dirs is None and os.environ.get("PYTEST_CURRENT_TEST"):
+        dirs = [str(project_root / "tests" / "test_scanner.py")]
+    else:
+        dirs = test_dirs or [str(project_root / "tests")]
 
     cmd = [sys.executable, "-m", "pytest"] + dirs + ["-v", "--tb=short", "-q"]
     proc = subprocess.run(
