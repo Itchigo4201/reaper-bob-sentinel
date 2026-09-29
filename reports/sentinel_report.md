@@ -1,6 +1,6 @@
 # REAPER-Bob Sentinel — Security Report
 
-**Generated:** 2026-09-29T01:27:01Z  
+**Generated:** 2026-09-29T01:56:51Z
 **Overall status:** ✅ PASS
 
 ## Summary
@@ -128,7 +128,7 @@ Remediation: Load secrets from environment variables (os.getenv) or a dedicated 
 | **File** | `vulnerable_app/utils.py` line 23 |
 | **Symbol** | `os.path.join` |
 | **Message** | os.path.join() receives unsanitised parameter 'filename'. Validate with os.path.realpath() and check the result stays within the base directory. |
-| **Remediation** | Validate path containment; replace MD5 with scrypt KDF + verify_password() |
+| **Remediation** | Resolve and validate path containment within the allowed base directory |
 | **Safe file** | `vulnerable_app/utils_safe.py` |
 | **Verification** | ✅ `PATH_TRAVERSAL` no longer detected in safe file |
 
@@ -153,8 +153,8 @@ Remediation: After constructing the path with os.path.join(), call os.path.realp
 | **Severity** | HIGH |
 | **File** | `vulnerable_app/utils.py` line 34 |
 | **Symbol** | `hashlib.md5` |
-| **Message** | hashlib.md5() is cryptographically broken. Use hashlib.sha256() or bcrypt/argon2 for passwords. |
-| **Remediation** | Validate path containment; replace MD5 with scrypt KDF + verify_password() |
+| **Message** | hashlib.md5() is cryptographically broken. Use scrypt/bcrypt/argon2 for passwords; use SHA-256 only for non-password hashing. |
+| **Remediation** | Replace MD5 password hashing with salted scrypt and verify_password() |
 | **Safe file** | `vulnerable_app/utils_safe.py` |
 | **Verification** | ✅ `WEAK_CRYPTO` no longer detected in safe file |
 

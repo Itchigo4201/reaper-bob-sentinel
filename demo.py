@@ -40,7 +40,7 @@ def _c(key: str, text: str) -> str:
     return f"{_C.get(key, '')}{text}{_C['reset']}"
 
 def _stage(n: int, title: str) -> None:
-    print(f"\n{_c('bold', f'  [{n}/6] {title}')}")
+    print(f"\n{_c('bold', f'  [{n}/5] {title}')}")
     print(_SEP)
 
 _APP_DIR = str(Path(__file__).parent / "vulnerable_app")

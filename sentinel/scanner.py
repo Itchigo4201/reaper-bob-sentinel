@@ -287,7 +287,7 @@ def _rule_weak_crypto(
                 symbol=f"hashlib.{func.attr}",
                 message=(
                     f"hashlib.{func.attr}() is cryptographically broken. "
-                    "Use hashlib.sha256() or bcrypt/argon2 for passwords."
+                    "Use scrypt/bcrypt/argon2 for passwords; use SHA-256 only for non-password hashing."
                 ),
                 snippet=_snippet(lines, node.lineno),
             )

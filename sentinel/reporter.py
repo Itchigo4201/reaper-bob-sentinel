@@ -39,10 +39,14 @@ _SEVERITY_BADGE = {
 
 def _fix_meta_for_finding(finding: Finding) -> dict:
     """Return the fix entry metadata relevant to a given finding."""
+    rule_overrides = {
+        "PATH_TRAVERSAL": "Resolve and validate path containment within the allowed base directory",
+        "WEAK_CRYPTO": "Replace MD5 password hashing with salted scrypt and verify_password()",
+    }
     for entry in _FIXES:
         if finding.rule_id in entry.rule_ids:
             return {
-                "description": entry.description,
+                "description": rule_overrides.get(finding.rule_id, entry.description),
                 "safe_file": f"vulnerable_app/{entry.safe_module}",
             }
     return {"description": "No fix available", "safe_file": ""}
@@ -156,7 +160,7 @@ def write_markdown(
     lines += [
         f"# {_PROJECT_NAME} — Security Report",
         "",
-        f"**Generated:** {timestamp}  ",
+        f"**Generated:** {timestamp}",
         f"**Overall status:** {overall} {'PASS' if verification.overall_passed else 'FAIL'}",
         "",
     ]

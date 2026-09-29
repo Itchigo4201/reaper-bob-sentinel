@@ -1,6 +1,6 @@
 {
   "project": "REAPER-Bob Sentinel",
-  "timestamp": "2026-09-29T01:27:01Z",
+  "timestamp": "2026-09-29T01:56:51Z",
   "summary": {
     "total_findings": 6,
     "critical": 2,
@@ -102,7 +102,7 @@
       "message": "os.path.join() receives unsanitised parameter 'filename'. Validate with os.path.realpath() and check the result stays within the base directory.",
       "snippet": "path = os.path.join(BASE_DIR, filename)",
       "explanation": "## Path Traversal\n\nA file path is constructed from user input without validation. A payload such as `../../etc/passwd` can escape the intended directory and expose arbitrary files on the system.\n\nRemediation: After constructing the path with os.path.join(), call os.path.realpath() and assert that the result starts with the expected base directory. Reject requests that fail the check.",
-      "remediation": "Validate path containment; replace MD5 with scrypt KDF + verify_password()",
+      "remediation": "Resolve and validate path containment within the allowed base directory",
       "safe_file": "vulnerable_app/utils_safe.py",
       "verification": {
         "rule_id": "PATH_TRAVERSAL",
@@ -118,10 +118,10 @@
       "file": "vulnerable_app/utils.py",
       "line": 34,
       "symbol": "hashlib.md5",
-      "message": "hashlib.md5() is cryptographically broken. Use hashlib.sha256() or bcrypt/argon2 for passwords.",
+      "message": "hashlib.md5() is cryptographically broken. Use scrypt/bcrypt/argon2 for passwords; use SHA-256 only for non-password hashing.",
       "snippet": "return hashlib.md5(password.encode()).hexdigest()",
       "explanation": "## Weak Cryptographic Hash\n\nMD5 and SHA-1 are collision-vulnerable and far too fast for password hashing \u2014 a modern GPU can test billions of candidates per second, making offline dictionary attacks trivial.\n\nRemediation: Use bcrypt, scrypt, or argon2 (via the `bcrypt` or `argon2-cffi` library) for passwords. For general-purpose checksums where collision resistance matters, use SHA-256 or SHA-3.",
-      "remediation": "Validate path containment; replace MD5 with scrypt KDF + verify_password()",
+      "remediation": "Replace MD5 password hashing with salted scrypt and verify_password()",
       "safe_file": "vulnerable_app/utils_safe.py",
       "verification": {
         "rule_id": "WEAK_CRYPTO",

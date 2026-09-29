@@ -14,10 +14,10 @@ Stack: Python 3.12, pytest, stdlib `ast` only (no third-party analysis libs).
 # Create venv (first time)
 python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
 
-# Run full demo (detect → explain → fix → test-generate)
+# Run full demo (detect → explain → fix → test-generate → verify → report)
 .venv/bin/python demo.py
 
-# Run all tests (M1 scanner + M2 fixer + generated regression tests)
+# Run all tests (scanner + fixer + generated regressions + verifier + reporter)
 .venv/bin/python -m pytest tests/ -v
 
 # Run a single test class
@@ -38,6 +38,8 @@ demo.py
   └─ sentinel/explainer.py     explain_all()     → populates Finding.explanation
   └─ sentinel/fixer.py         apply_fixes()     → writes vulnerable_app/*_safe.py
   └─ sentinel/test_generator.py generate_tests() → writes tests/generated/test_fix_*.py
+  └─ sentinel/verifier.py      verify_all()       → re-scan + pytest verification
+  └─ sentinel/reporter.py      write_reports()    → JSON + Markdown reports
 ```
 
 - `sentinel/models.py` — `Finding` dataclass; shared by all stages.
@@ -68,4 +70,4 @@ demo.py
 
 - **M1** ✅ `detect → explain` — scanner + explainer + 20 tests
 - **M2** ✅ `fix → test-generate` — fixer + test_generator + 40 tests
-- **M3** ⬜ `verify → report` — verifier + reporter + demo wiring
+- **M3** ✅ `verify → report` — verifier + reporter + final demo; 87 tests passing
