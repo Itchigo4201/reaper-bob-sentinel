@@ -1,0 +1,134 @@
+{
+  "project": "REAPER-Bob Sentinel",
+  "timestamp": "2026-09-29T01:27:01Z",
+  "summary": {
+    "total_findings": 6,
+    "critical": 2,
+    "high": 4,
+    "medium": 0,
+    "low": 0,
+    "fixes_applied": 4,
+    "scans_clean": 5,
+    "scans_total": 5,
+    "tests_passed": 87,
+    "tests_failed": 0,
+    "tests_total": 87,
+    "overall_status": "PASS"
+  },
+  "findings": [
+    {
+      "rule_id": "COMMAND_INJECTION",
+      "owasp": "A03:2021 Injection",
+      "severity": "CRITICAL",
+      "file": "vulnerable_app/api.py",
+      "line": 17,
+      "symbol": "subprocess.run",
+      "message": "'subprocess.run' called with shell=True and unsanitised input. Pass a list of arguments and set shell=False.",
+      "snippet": "result = subprocess.run(",
+      "explanation": "## OS Command Injection\n\nA shell command is constructed with user-supplied input and executed with shell=True. An attacker can append shell metacharacters (`;`, `|`, `&&`) to run arbitrary commands on the host with the privileges of the application process.\n\nRemediation: Pass a list of arguments to subprocess.run() and set shell=False (the default). Validate and allowlist the input before using it even in list form.",
+      "remediation": "Pass arguments as a list to subprocess.run with shell=False",
+      "safe_file": "vulnerable_app/api_safe.py",
+      "verification": {
+        "rule_id": "COMMAND_INJECTION",
+        "safe_file": "vulnerable_app/api_safe.py",
+        "residual_findings": 0,
+        "passed": true
+      }
+    },
+    {
+      "rule_id": "SQL_INJECTION",
+      "owasp": "A03:2021 Injection",
+      "severity": "CRITICAL",
+      "file": "vulnerable_app/db.py",
+      "line": 30,
+      "symbol": "execute",
+      "message": "SQL query constructed with string interpolation. Use parameterized queries (pass values as a tuple).",
+      "snippet": "cursor = conn.execute(f\"SELECT * FROM users WHERE username = '{username}'\")",
+      "explanation": "## SQL Injection\n\nUser-controlled input is concatenated directly into a SQL statement. An attacker can craft a payload such as `' OR '1'='1` to bypass authentication, dump the entire database, or (on some engines) execute arbitrary OS commands.\n\nRemediation: Always use parameterized queries \u2014 pass values as the second argument to cursor.execute(), never as part of the SQL string. Example: cursor.execute('SELECT * FROM users WHERE username = ?', (username,))",
+      "remediation": "Use parameterized SQL query instead of f-string interpolation",
+      "safe_file": "vulnerable_app/db_safe.py",
+      "verification": {
+        "rule_id": "SQL_INJECTION",
+        "safe_file": "vulnerable_app/db_safe.py",
+        "residual_findings": 0,
+        "passed": true
+      }
+    },
+    {
+      "rule_id": "HARDCODED_SECRET",
+      "owasp": "A02:2021 Cryptographic Failures",
+      "severity": "HIGH",
+      "file": "vulnerable_app/auth.py",
+      "line": 11,
+      "symbol": "ADMIN_PASSWORD",
+      "message": "Hardcoded secret assigned to 'ADMIN_PASSWORD'. Use environment variables or a secrets manager instead.",
+      "snippet": "ADMIN_PASSWORD = \"supersecret123\"",
+      "explanation": "## Hardcoded Credential / Secret\n\nA secret value (password, key, or token) is embedded directly in source code. Anyone with read access to the repository \u2014 including version-control history \u2014 can retrieve the secret permanently, even after it is rotated in the live system.\n\nRemediation: Load secrets from environment variables (os.getenv) or a dedicated secrets manager (e.g. HashiCorp Vault, AWS Secrets Manager). Rotate the leaked credential immediately.",
+      "remediation": "Load credentials and secret key from environment variables",
+      "safe_file": "vulnerable_app/auth_safe.py",
+      "verification": {
+        "rule_id": "HARDCODED_SECRET",
+        "safe_file": "vulnerable_app/auth_safe.py",
+        "residual_findings": 0,
+        "passed": true
+      }
+    },
+    {
+      "rule_id": "HARDCODED_SECRET",
+      "owasp": "A02:2021 Cryptographic Failures",
+      "severity": "HIGH",
+      "file": "vulnerable_app/auth.py",
+      "line": 14,
+      "symbol": "SECRET_KEY",
+      "message": "Hardcoded secret assigned to 'SECRET_KEY'. Use environment variables or a secrets manager instead.",
+      "snippet": "SECRET_KEY = \"hardcoded_jwt_secret_do_not_ship\"",
+      "explanation": "## Hardcoded Credential / Secret\n\nA secret value (password, key, or token) is embedded directly in source code. Anyone with read access to the repository \u2014 including version-control history \u2014 can retrieve the secret permanently, even after it is rotated in the live system.\n\nRemediation: Load secrets from environment variables (os.getenv) or a dedicated secrets manager (e.g. HashiCorp Vault, AWS Secrets Manager). Rotate the leaked credential immediately.",
+      "remediation": "Load credentials and secret key from environment variables",
+      "safe_file": "vulnerable_app/auth_safe.py",
+      "verification": {
+        "rule_id": "HARDCODED_SECRET",
+        "safe_file": "vulnerable_app/auth_safe.py",
+        "residual_findings": 0,
+        "passed": true
+      }
+    },
+    {
+      "rule_id": "PATH_TRAVERSAL",
+      "owasp": "A01:2021 Broken Access Control",
+      "severity": "HIGH",
+      "file": "vulnerable_app/utils.py",
+      "line": 23,
+      "symbol": "os.path.join",
+      "message": "os.path.join() receives unsanitised parameter 'filename'. Validate with os.path.realpath() and check the result stays within the base directory.",
+      "snippet": "path = os.path.join(BASE_DIR, filename)",
+      "explanation": "## Path Traversal\n\nA file path is constructed from user input without validation. A payload such as `../../etc/passwd` can escape the intended directory and expose arbitrary files on the system.\n\nRemediation: After constructing the path with os.path.join(), call os.path.realpath() and assert that the result starts with the expected base directory. Reject requests that fail the check.",
+      "remediation": "Validate path containment; replace MD5 with scrypt KDF + verify_password()",
+      "safe_file": "vulnerable_app/utils_safe.py",
+      "verification": {
+        "rule_id": "PATH_TRAVERSAL",
+        "safe_file": "vulnerable_app/utils_safe.py",
+        "residual_findings": 0,
+        "passed": true
+      }
+    },
+    {
+      "rule_id": "WEAK_CRYPTO",
+      "owasp": "A02:2021 Cryptographic Failures",
+      "severity": "HIGH",
+      "file": "vulnerable_app/utils.py",
+      "line": 34,
+      "symbol": "hashlib.md5",
+      "message": "hashlib.md5() is cryptographically broken. Use hashlib.sha256() or bcrypt/argon2 for passwords.",
+      "snippet": "return hashlib.md5(password.encode()).hexdigest()",
+      "explanation": "## Weak Cryptographic Hash\n\nMD5 and SHA-1 are collision-vulnerable and far too fast for password hashing \u2014 a modern GPU can test billions of candidates per second, making offline dictionary attacks trivial.\n\nRemediation: Use bcrypt, scrypt, or argon2 (via the `bcrypt` or `argon2-cffi` library) for passwords. For general-purpose checksums where collision resistance matters, use SHA-256 or SHA-3.",
+      "remediation": "Validate path containment; replace MD5 with scrypt KDF + verify_password()",
+      "safe_file": "vulnerable_app/utils_safe.py",
+      "verification": {
+        "rule_id": "WEAK_CRYPTO",
+        "safe_file": "vulnerable_app/utils_safe.py",
+        "residual_findings": 0,
+        "passed": true
+      }
+    }
+  ]
+}
